@@ -1,0 +1,2261 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <link rel="icon" href="data:,">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RAGED COACH — Дневник бега</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0b0b0e;
+            --bg-card: #121216;
+            --surface: #1a1a20;
+            --surface-2: #24242c;
+            --border: #2a2a32;
+            --border-light: #3a3a44;
+            --text: #f1f1f5;
+            --text-secondary: #a8a8b5;
+            --text-muted: #6a6a78;
+            --accent: #fbbf24;
+            --accent-hover: #f59e0b;
+            --accent-dim: rgba(251, 191, 36, 0.12);
+            --red: #f87171;
+            --green: #34d399;
+            --blue: #60a5fa;
+            --purple: #a78bfa;
+            --radius: 10px;
+            --radius-lg: 14px;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --font: 'Inter', system-ui, -apple-system, sans-serif;
+            --mono: 'JetBrains Mono', monospace;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--border-light); }
+
+        .bg-wrap {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-wrap .grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+            background-size: 60px 60px;
+            animation: gridMove 40s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(60px, 60px); }
+        }
+
+        .bg-wrap .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            animation: orbFloat 16s ease-in-out infinite alternate;
+        }
+
+        .bg-wrap .orb:nth-child(1) {
+            width: 400px; height: 400px;
+            background: #fbbf24;
+            top: -10%; left: -5%;
+            animation-duration: 18s;
+        }
+        .bg-wrap .orb:nth-child(2) {
+            width: 500px; height: 500px;
+            background: #f59e0b;
+            bottom: -15%; right: -5%;
+            animation-duration: 22s;
+            animation-delay: 2s;
+        }
+        .bg-wrap .orb:nth-child(3) {
+            width: 300px; height: 300px;
+            background: #fcd34d;
+            top: 50%; left: 60%;
+            animation-duration: 14s;
+            animation-delay: 4s;
+            opacity: 0.2;
+        }
+
+        @keyframes orbFloat {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(40px, -30px) scale(1.2); }
+        }
+
+        .bg-wrap .particle {
+            position: absolute;
+            width: 4px; height: 4px;
+            background: var(--accent);
+            border-radius: 50%;
+            box-shadow: 0 0 12px var(--accent-dim);
+            animation: particleRise linear infinite;
+            opacity: 0;
+        }
+
+        @keyframes particleRise {
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
+            20% { opacity: 0.7; }
+            80% { opacity: 0.7; }
+            100% { transform: translateY(-120vh) scale(1.2); opacity: 0; }
+        }
+
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 28px;
+            background: rgba(11, 11, 14, 0.8);
+            backdrop-filter: blur(16px) saturate(1.4);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        .logo-mark {
+            width: 48px;
+            height: 48px;
+            background-color: #1A1A20;
+            background-image: url('/static/logo.png');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            transition: var(--transition);
+            border: 2px solid #1A1A20;
+        }
+
+        .logo:hover .logo-mark {
+            transform: scale(1.05) rotate(-4deg);
+        }
+
+        .logo-text {
+            font-weight: 700;
+            font-size: 1.2rem;
+            letter-spacing: -0.02em;
+        }
+
+        .logo-text span { color: var(--accent); }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--font);
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 8px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-secondary);
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--accent-dim);
+            opacity: 0;
+            transition: var(--transition);
+        }
+        .btn:hover::after { opacity: 1; }
+        .btn > * { position: relative; z-index: 1; }
+
+        .btn:hover {
+            border-color: var(--border-light);
+            color: var(--text);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            border-color: var(--accent-hover);
+            color: #000;
+            transform: scale(1.03);
+        }
+
+        .btn-outline {
+            border-color: var(--border-light);
+            color: var(--text-secondary);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.75rem;
+            font-family: var(--mono);
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-icon:hover {
+            border-color: var(--border-light);
+            color: var(--text);
+            background: var(--surface);
+        }
+
+        .profile-wrap { position: relative; }
+
+        .profile-menu {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 8px);
+            width: 240px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            z-index: 999;
+            display: none;
+            overflow: hidden;
+            animation: fadeUp 0.2s ease;
+        }
+
+        .profile-menu.active { display: block; }
+
+        .profile-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .profile-avatar {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: var(--accent-dim);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .profile-name { font-weight: 600; color: #fff; font-size: 0.95rem; }
+        .profile-email { font-size: 0.75rem; color: var(--text-muted); }
+
+        .profile-body { padding: 8px; }
+
+        .profile-btn {
+            width: 100%;
+            padding: 8px 12px;
+            background: none;
+            border: none;
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-family: var(--font);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .profile-btn:hover { background: var(--surface); color: var(--text); }
+        .profile-btn.danger { color: var(--red); }
+        .profile-btn.danger:hover { background: rgba(248, 113, 113, 0.1); color: var(--red); }
+
+        .landing {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 28px 60px;
+            animation: fadeUp 0.8s ease;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 64px;
+            align-items: center;
+            margin-bottom: 64px;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 4px 16px;
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: var(--bg-card);
+            letter-spacing: 0.04em;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            transition: var(--transition);
+        }
+
+        .hero-badge:hover { border-color: var(--accent); color: var(--accent); }
+
+        .hero h1 {
+            font-size: 3.8rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.08;
+            margin-bottom: 16px;
+            color: #fff;
+        }
+
+        .hero h1 em {
+            font-style: normal;
+            color: var(--accent);
+            position: relative;
+            display: inline-block;
+        }
+
+        .hero h1 em::after {
+            content: '';
+            position: absolute;
+            bottom: 2px; left: 0; right: 0;
+            height: 6px;
+            background: var(--accent-dim);
+            border-radius: 4px;
+            z-index: -1;
+            transition: var(--transition);
+        }
+
+        .hero h1 em:hover::after { height: 10px; background: var(--accent); }
+
+        .hero p {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            max-width: 480px;
+            line-height: 1.7;
+            margin-bottom: 32px;
+        }
+
+        .hero-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
+
+        .hero-btn { padding: 14px 32px; font-size: 1rem; border-radius: 8px; }
+
+        .hero-visual {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            box-shadow: var(--shadow);
+            font-family: var(--mono);
+            font-size: 0.85rem;
+            transition: var(--transition);
+        }
+
+        .hero-visual:hover {
+            border-color: var(--border-light);
+            transform: translateY(-4px) scale(1.01);
+        }
+
+        .hero-visual .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .hero-visual .row:last-child { border-bottom: none; }
+        .hero-visual .label { color: var(--text-muted); }
+        .hero-visual .value { color: var(--text); }
+        .hero-visual .value.accent { color: var(--accent); }
+        .hero-visual .value.green { color: var(--green); }
+
+        .stats-row {
+            display: flex;
+            gap: 56px;
+            flex-wrap: wrap;
+            padding-top: 32px;
+            border-top: 1px solid var(--border);
+        }
+
+        .stat-block .num {
+            font-size: 2.4rem;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.02em;
+            transition: var(--transition);
+        }
+        .stat-block:hover .num { color: var(--accent); transform: scale(1.05); }
+
+        .stat-block .desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-top: 2px;
+        }
+
+        .app {
+            display: none;
+            position: relative;
+            z-index: 1;
+            min-height: calc(100vh - 65px);
+        }
+
+        .app.active { display: flex; animation: fadeUp 0.4s ease; }
+
+        .sidebar {
+            width: 220px;
+            flex-shrink: 0;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            padding: 16px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            overflow-y: auto;
+        }
+
+        .sidebar-label {
+            font-family: var(--mono);
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-muted);
+            padding: 12px 12px 6px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 14px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            background: none;
+            border: none;
+            font-family: var(--font);
+            text-align: left;
+            width: 100%;
+            position: relative;
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%) scaleX(0);
+            width: 3px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: 0 4px 4px 0;
+            transition: var(--transition);
+        }
+
+        .nav-item.active::before { transform: translateY(-50%) scaleX(1); }
+        .nav-item:hover { background: var(--surface); color: var(--text); }
+        .nav-item.active { background: var(--accent-dim); color: var(--accent); font-weight: 600; }
+
+        .nav-divider { height: 1px; background: var(--border); margin: 6px 12px; }
+
+        .main {
+            flex: 1;
+            padding: 28px 32px 40px;
+            overflow-y: auto;
+            max-height: calc(100vh - 65px);
+            background: var(--bg);
+        }
+
+        .page-header { margin-bottom: 28px; animation: fadeUp 0.5s ease; }
+
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #fff;
+            margin-bottom: 2px;
+        }
+
+        .page-sub { color: var(--text-secondary); font-size: 0.9rem; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            transition: var(--transition);
+            cursor: default;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: var(--accent);
+            transform: scaleX(0);
+            transition: var(--transition);
+        }
+        .stat-card:hover::after { transform: scaleX(1); }
+
+        .stat-card:hover {
+            border-color: var(--border-light);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
+
+        .stat-card .label {
+            font-family: var(--mono);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .stat-card .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #fff;
+            line-height: 1.2;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 22px 24px;
+            margin-bottom: 14px;
+            transition: var(--transition);
+            animation: fadeUp 0.6s ease;
+        }
+
+        .card:hover { border-color: var(--border-light); transform: translateY(-2px); }
+
+        .card-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .card-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .chart-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            height: 140px;
+            padding: 8px 0;
+        }
+
+        .chart-bars .bar {
+            flex: 1;
+            background: var(--surface-2);
+            border-radius: 3px;
+            min-height: 6px;
+            transition: var(--transition);
+            position: relative;
+            cursor: pointer;
+        }
+
+        .chart-bars .bar:hover {
+            background: var(--accent);
+            transform: scaleY(1.05);
+            opacity: 0.9;
+        }
+
+        .chart-bars .bar .tip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            font-family: var(--mono);
+            white-space: nowrap;
+            opacity: 0;
+            transition: var(--transition);
+            background: var(--bg-card);
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .chart-bars .bar:hover .tip {
+            opacity: 1;
+            bottom: calc(100% + 6px);
+        }
+
+        .journal-layout {
+            display: grid;
+            grid-template-columns: 420px 1fr;
+            gap: 28px;
+            align-items: start;
+        }
+
+        .journal-form {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            position: sticky;
+            top: 28px;
+            transition: var(--transition);
+        }
+
+        .journal-form:hover { border-color: var(--border-light); }
+
+        .journal-form .form-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+
+        .journal-form .form-sub {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .quick-presets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 18px;
+        }
+
+        .preset-btn {
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font);
+        }
+
+        .preset-btn:hover {
+            border-color: var(--border-light);
+            color: var(--text);
+            background: var(--surface-2);
+        }
+
+        .preset-btn.active {
+            border-color: var(--accent);
+            background: var(--accent-dim);
+            color: var(--accent);
+        }
+
+        .form-group { margin-bottom: 16px; }
+
+        .form-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .form-group .input,
+        .form-group .textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 0.9rem;
+            transition: var(--transition);
+            outline: none;
+            appearance: none;
+        }
+
+        .form-group .input:focus,
+        .form-group .textarea:focus,
+        .form-group select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
+
+        .form-group .textarea {
+            min-height: 100px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .mood-selector {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .mood-btn {
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font);
+        }
+
+        .mood-btn:hover {
+            border-color: var(--border-light);
+            color: var(--text);
+            background: var(--surface-2);
+        }
+
+        .mood-btn.active {
+            border-color: var(--accent);
+            background: var(--accent-dim);
+            color: var(--accent);
+        }
+
+        .btn-save {
+            width: 100%;
+            padding: 12px;
+            font-size: 0.95rem;
+            border-radius: var(--radius);
+            margin-top: 6px;
+            background: var(--accent);
+            color: #000;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font);
+        }
+
+        .btn-save:hover {
+            background: var(--accent-hover);
+            transform: scale(1.01);
+        }
+
+        .journal-entries {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .journal-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 4px;
+        }
+
+        .journal-toolbar .filter-btn {
+            padding: 4px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 0.78rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font);
+        }
+
+        .journal-toolbar .filter-btn:hover {
+            border-color: var(--border-light);
+            color: var(--text);
+        }
+
+        .journal-toolbar .filter-btn.active {
+            border-color: var(--accent);
+            background: var(--accent-dim);
+            color: var(--accent);
+        }
+
+        .journal-toolbar .search-input {
+            padding: 6px 14px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: var(--text);
+            font-size: 0.82rem;
+            font-family: var(--font);
+            outline: none;
+            transition: var(--transition);
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .journal-toolbar .search-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
+
+        .entry-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 18px 20px;
+            transition: var(--transition);
+            animation: fadeUp 0.3s ease;
+        }
+
+        .entry-card:hover {
+            border-color: var(--border-light);
+            box-shadow: var(--shadow);
+            transform: translateY(-2px);
+        }
+
+        .entry-card .head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .entry-card .head .date {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: var(--mono);
+        }
+
+        .entry-card .head .type-badge {
+            font-size: 0.7rem;
+            padding: 2px 12px;
+            background: var(--surface-2);
+            border-radius: 100px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .entry-card .head .mood {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            background: var(--surface);
+            padding: 2px 10px;
+            border-radius: 100px;
+        }
+
+        .entry-card .body {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin: 4px 0 8px;
+            word-break: break-word;
+        }
+
+        .entry-card .foot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+        }
+
+        .entry-card .foot .meta {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-family: var(--mono);
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .entry-card .foot .actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .entry-card .foot .actions button {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 4px;
+            transition: var(--transition);
+            font-family: var(--font);
+            font-weight: 500;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        .entry-card .foot .actions button:hover {
+            color: var(--text);
+            background: var(--surface);
+        }
+
+        .entry-card .foot .actions button.danger:hover {
+            color: var(--red);
+            background: rgba(248, 113, 113, 0.1);
+        }
+
+        .entry-card .foot .actions button.edit:hover {
+            color: var(--accent);
+            background: var(--accent-dim);
+        }
+
+        .entry-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+
+        .entry-empty .icon {
+            font-size: 0.8rem;
+            margin-bottom: 12px;
+            opacity: 0.5;
+            font-family: var(--mono);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+        }
+
+        .entry-empty p { font-size: 0.95rem; }
+
+        .insight-card {
+            border-left: 4px solid var(--accent);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px 24px;
+            margin-bottom: 12px;
+            transition: var(--transition);
+            animation: fadeUp 0.5s ease;
+        }
+
+        .insight-card:hover {
+            border-color: var(--border-light);
+            transform: translateX(4px);
+        }
+
+        .insight-card .title {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .insight-card .desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .insight-card .meta {
+            font-family: var(--mono);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 10px;
+            display: flex;
+            gap: 16px;
+        }
+
+        .insight-card.accent { border-left-color: var(--accent); }
+        .insight-card.red { border-left-color: var(--red); }
+        .insight-card.purple { border-left-color: var(--purple); }
+        .insight-card.green { border-left-color: var(--green); }
+        .insight-card.blue { border-left-color: var(--blue); }
+
+        .assistant-chat {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .assistant-chat .msg {
+            padding: 14px 18px;
+            border-radius: var(--radius-lg);
+            max-width: 85%;
+            animation: fadeUp 0.3s ease;
+        }
+
+        .assistant-chat .msg.user {
+            background: var(--surface-2);
+            align-self: flex-end;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .assistant-chat .msg.bot {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            align-self: flex-start;
+            color: var(--text-secondary);
+        }
+
+        .assistant-chat .msg.bot .label {
+            font-size: 0.7rem;
+            color: var(--accent);
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--mono);
+            letter-spacing: 0.05em;
+        }
+
+        .assistant-chat .msg .text { line-height: 1.7; }
+
+        .assistant-chat .msg .tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .assistant-chat .msg .tags span {
+            padding: 2px 12px;
+            background: var(--surface);
+            border-radius: 100px;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .assistant-chat .msg .tags span:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .assistant-input {
+            display: flex;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .assistant-input input {
+            flex: 1;
+            padding: 12px 16px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 0.9rem;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .assistant-input input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
+
+        .suggestions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .suggestions .chip {
+            padding: 6px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font);
+        }
+
+        .suggestions .chip:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-dim);
+            transform: scale(1.02);
+        }
+
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-width: 400px;
+        }
+
+        .toast {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px 20px;
+            color: var(--text);
+            font-weight: 500;
+            font-size: 0.9rem;
+            box-shadow: var(--shadow);
+            animation: slideUp 0.3s ease;
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toast.success { border-color: var(--green); }
+        .toast.error { border-color: var(--red); }
+        .toast.info { border-color: var(--accent); }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(12px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay.active { display: flex; animation: fadeUp 0.2s ease; }
+
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            width: 90%;
+            max-width: 420px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-header h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: var(--transition);
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-family: var(--mono);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .modal-close:hover { color: var(--text); background: var(--surface); }
+
+        .modal-body { padding: 20px; }
+
+        .auth-hint {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 12px;
+            text-align: center;
+        }
+
+        .form-actions { display: flex; gap: 8px; margin-top: 12px; }
+        .form-actions .btn { flex: 1; }
+
+        @media (max-width: 1024px) {
+            .journal-layout { grid-template-columns: 1fr; }
+            .journal-form { position: static; }
+        }
+
+        @media (max-width: 820px) {
+            .hero { grid-template-columns: 1fr; gap: 40px; }
+            .hero h1 { font-size: 2.8rem; }
+            .stats-row { gap: 30px; }
+            .sidebar { width: 60px; padding: 12px 6px; }
+            .sidebar .sidebar-label { display: none; }
+            .sidebar .nav-item .label { display: none; }
+            .sidebar .nav-item { justify-content: center; padding: 10px; font-size: 0.9rem; }
+            .main { padding: 16px 16px 32px; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .journal-toolbar { flex-wrap: wrap; }
+            .header { padding: 10px 16px; }
+            .header-actions .btn-text { display: none; }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 2rem; }
+            .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .stat-card .value { font-size: 1.4rem; }
+            .form-row { grid-template-columns: 1fr; }
+            .journal-form { padding: 16px; }
+            .entry-card { padding: 14px 16px; }
+            .landing { padding: 40px 16px 32px; }
+            .main { padding: 12px 12px 24px; }
+            .toast-container { left: 16px; right: 16px; bottom: 16px; }
+            .toast { font-size: 0.8rem; padding: 12px 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-wrap">
+        <div class="grid"></div>
+        <div class="orb"></div>
+        <div class="orb"></div>
+        <div class="orb"></div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <header class="header">
+        <div class="header-left">
+            <a class="logo" href="#" onclick="showLanding()">
+                <div class="logo-mark"></div>
+                <span class="logo-text">RAGED<span>RUN</span></span>
+            </a>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-outline btn-text" onclick="showApp('journal')">Дневник</button>
+            <button class="btn btn-primary btn-text" onclick="showApp('journal')">Записать</button>
+            <div class="profile-wrap">
+                <button class="btn-icon" id="profileBtn" onclick="toggleProfileMenu()" title="Профиль">ID</button>
+                <div class="profile-menu" id="profileMenu"></div>
+            </div>
+        </div>
+    </header>
+
+    <section class="landing" id="landing">
+        <div class="hero">
+            <div>
+                <span class="hero-badge">Дневник бега</span>
+                <h1 id="heroTitle">Записывай каждую <em>пробежку</em></h1>
+                <p id="heroSub">Отслеживай прогресс, темп и самочувствие. Понимай, что реально влияет на твои результаты.</p>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary hero-btn" onclick="showApp('journal')">Записать пробежку</button>
+                    <button class="btn btn-outline hero-btn" onclick="showApp('assistant')">Спросить AI</button>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="row"><span class="label" id="heroSessionLabel">последняя</span><span class="value accent" id="heroSessionValue">—</span></div>
+                <div class="row"><span class="label">средний темп</span><span class="value" id="heroPaceValue">—</span></div>
+                <div class="row"><span class="label">дистанция</span><span class="value" id="heroDistanceValue">—</span></div>
+                <div class="row"><span class="label">пульс ср.</span><span class="value" id="heroPulseValue">—</span></div>
+                <div class="row"><span class="label">всего пробежек</span><span class="value green" id="heroCountValue">—</span></div>
+            </div>
+        </div>
+        <div class="stats-row">
+            <div class="stat-block"><div class="num">24/7</div><div class="desc">Дневник</div></div>
+            <div class="stat-block"><div class="num">100%</div><div class="desc">Фокус на бег</div></div>
+            <div class="stat-block"><div class="num">10k+</div><div class="desc">Пробежек</div></div>
+            <div class="stat-block"><div class="num">0₽</div><div class="desc">Навсегда</div></div>
+        </div>
+    </section>
+
+    <div class="app" id="app">
+        <aside class="sidebar">
+            <div class="sidebar-label">Меню</div>
+            <button class="nav-item active" onclick="switchView('journal', this)">
+                <span class="label">Дневник</span>
+            </button>
+            <button class="nav-item" onclick="switchView('dashboard', this)">
+                <span class="label">Статистика</span>
+            </button>
+            <button class="nav-item" onclick="switchView('insights', this)">
+                <span class="label">Инсайты</span>
+            </button>
+            <button class="nav-item" onclick="switchView('assistant', this)">
+                <span class="label">AI-тренер</span>
+            </button>
+            <div class="nav-divider"></div>
+            <div class="sidebar-label">Данные</div>
+            <button class="nav-item" onclick="switchView('nutrition', this)">
+                <span class="label">Питание</span>
+            </button>
+            <button class="nav-item" onclick="switchView('sleep', this)">
+                <span class="label">Сон</span>
+            </button>
+        </aside>
+
+        <main class="main">
+
+            <div id="view-journal">
+                <div class="page-header">
+                    <h1 class="page-title">Дневник бега</h1>
+                    <p class="page-sub">Записывай каждую пробежку — тренировки, самочувствие, питание</p>
+                </div>
+
+                <div class="journal-layout">
+                    <div class="journal-form">
+                        <div class="form-title">Новая пробежка</div>
+                        <div class="form-sub">Выбери шаблон или заполни вручную</div>
+
+                        <div class="quick-presets" id="presetContainer">
+                            <button class="preset-btn active" data-type="easy">Легкая</button>
+                            <button class="preset-btn" data-type="tempo">Темповая</button>
+                            <button class="preset-btn" data-type="interval">Интервалы</button>
+                            <button class="preset-btn" data-type="long">Длинная</button>
+                            <button class="preset-btn" data-type="recovery">Восстановительная</button>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Текст записи</label>
+                            <textarea class="textarea" id="journalText" placeholder="Как прошла пробежка? Ощущения, погода, темп..." rows="3"></textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Тип пробежки</label>
+                                <select id="journalType">
+                                    <option value="easy">Легкая</option>
+                                    <option value="tempo">Темповая</option>
+                                    <option value="interval">Интервалы</option>
+                                    <option value="long">Длинная</option>
+                                    <option value="recovery">Восстановительная</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Дата</label>
+                                <input class="input" type="date" id="journalDate" />
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Длительность (мин)</label>
+                                <input class="input" type="number" id="journalDuration" placeholder="45" min="1" />
+                            </div>
+                            <div class="form-group">
+                                <label>Дистанция (км)</label>
+                                <input class="input" type="text" id="journalDistance" placeholder="5.0" />
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Средний пульс</label>
+                                <input class="input" type="number" id="avgHeartRate" placeholder="140" />
+                            </div>
+                            <div class="form-group">
+                                <label>Калории</label>
+                                <input class="input" type="number" id="caloriesBurned" placeholder="500" />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Самочувствие</label>
+                            <div class="mood-selector" id="moodSelector">
+                                <button class="mood-btn active" data-mood="Отлично">Отлично</button>
+                                <button class="mood-btn" data-mood="Хорошо">Хорошо</button>
+                                <button class="mood-btn" data-mood="Средне">Средне</button>
+                                <button class="mood-btn" data-mood="Тяжело">Тяжело</button>
+                                <button class="mood-btn" data-mood="Болен">Болен</button>
+                            </div>
+                        </div>
+
+                        <button class="btn-save" onclick="saveJournalEntry()">Сохранить пробежку</button>
+                    </div>
+
+                    <div>
+                        <div class="journal-toolbar">
+                            <button class="filter-btn active" data-filter="all">Все</button>
+                            <button class="filter-btn" data-filter="easy">Легкие</button>
+                            <button class="filter-btn" data-filter="tempo">Темповые</button>
+                            <button class="filter-btn" data-filter="interval">Интервалы</button>
+                            <button class="filter-btn" data-filter="long">Длинные</button>
+                            <input class="search-input" id="searchInput" placeholder="Поиск..." />
+                        </div>
+
+                        <div class="journal-entries" id="journalEntries"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-dashboard" style="display:none;">
+                <div class="page-header">
+                    <h1 class="page-title">Статистика</h1>
+                    <p class="page-sub">Сводка по твоим пробежкам</p>
+                </div>
+                <div class="stats-grid" id="dashboardStats">
+                    <div class="stat-card">
+                        <div class="label">Пробежек</div>
+                        <div class="value" id="statTotal">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">Всего км</div>
+                        <div class="value" id="statDistance">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">Всего минут</div>
+                        <div class="value" id="statDuration">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">Средний темп</div>
+                        <div class="value" id="statAvgPace">—</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Пробежки за неделю</div>
+                    <div class="chart-bars">
+                        <div class="bar" style="height:60%"><span class="tip">Пн</span></div>
+                        <div class="bar" style="height:45%"><span class="tip">Вт</span></div>
+                        <div class="bar" style="height:75%"><span class="tip">Ср</span></div>
+                        <div class="bar" style="height:55%"><span class="tip">Чт</span></div>
+                        <div class="bar" style="height:80%"><span class="tip">Пт</span></div>
+                        <div class="bar" style="height:50%"><span class="tip">Сб</span></div>
+                        <div class="bar" style="height:70%"><span class="tip">Вс</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-insights" style="display:none;">
+                <div class="page-header">
+                    <h1 class="page-title">Инсайты</h1>
+                    <p class="page-sub">Закономерности в твоих пробежках</p>
+                </div>
+                <div class="insight-card accent">
+                    <div class="title">Углеводы → темп +8%</div>
+                    <div class="desc">В дни с углеводами за 2 часа до пробежки темп улучшается на 8%.</div>
+                    <div class="meta"><span>уверенность 87%</span><span>23 пробежки</span></div>
+                </div>
+                <div class="insight-card red">
+                    <div class="title">Риск перетренированности</div>
+                    <div class="desc">Вариабельность пульса снизилась на 15%. Рекомендуется 2 дня отдыха.</div>
+                    <div class="meta"><span>уверенность 73%</span><span>7 дней</span></div>
+                </div>
+                <div class="insight-card purple">
+                    <div class="title">Сон &lt; 6ч → пульс +10</div>
+                    <div class="desc">При сне менее 6 часов пульс на пробежке выше на 10–12 уд/мин.</div>
+                    <div class="meta"><span>уверенность 82%</span><span>15 дней</span></div>
+                </div>
+                <div class="insight-card green">
+                    <div class="title">Лучшие недели — 4 пробежки</div>
+                    <div class="desc">4 пробежки в неделю (2 легкие + 1 темповая + 1 длинная) дают максимальный прогресс.</div>
+                    <div class="meta"><span>уверенность 91%</span><span>8 недель</span></div>
+                </div>
+            </div>
+
+            <div id="view-assistant" style="display:none;">
+                <div class="page-header">
+                    <h1 class="page-title">AI-тренер</h1>
+                    <p class="page-sub">Задай вопрос о своих пробежках</p>
+                </div>
+
+                <div class="assistant-chat" id="assistantChat">
+                    <div class="msg bot">
+                        <div class="label">RAGED AI</div>
+                        <div class="text">Привет. Я анализирую твои пробежки, сон и питание. Спроси меня, почему темп улучшился, что мешает прогрессу или как подготовиться к длинной пробежке.</div>
+                    </div>
+                </div>
+
+                <div class="assistant-input">
+                    <input id="ragQuestion" placeholder="Спросите о своих пробежках..." onkeypress="if(event.key==='Enter')askRag()" />
+                    <button class="btn btn-primary" onclick="askRag()">Спросить</button>
+                </div>
+
+                <div class="suggestions">
+                    <span class="chip" onclick="setQ('Почему темп улучшился?')">Темп</span>
+                    <span class="chip" onclick="setQ('Как увеличить дистанцию?')">Дистанция</span>
+                    <span class="chip" onclick="setQ('Что есть перед пробежкой?')">Питание</span>
+                    <span class="chip" onclick="setQ('Как восстановиться после длинной?')">Восстановление</span>
+                </div>
+            </div>
+
+            <div id="view-nutrition" style="display:none;">
+                <div class="page-header">
+                    <h1 class="page-title">Питание</h1>
+                    <p class="page-sub">Питание для бегунов</p>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="label">Калории</div><div class="value">2450</div></div>
+                    <div class="stat-card"><div class="label">Белки</div><div class="value">156г</div></div>
+                    <div class="stat-card"><div class="label">Углеводы</div><div class="value">287г</div></div>
+                    <div class="stat-card"><div class="label">Жиры</div><div class="value">73г</div></div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Углеводы перед пробежкой</div>
+                    <div class="card-text">За 2 часа до пробежки — сложные углеводы (овсянка, паста, банан). Это даёт энергию и улучшает темп на 8–12%.</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Гидратация</div>
+                    <div class="card-text">500 мл воды за 1 час до пробежки. При дистанции более 10 км — изотоник каждые 20 минут.</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Восстановление</div>
+                    <div class="card-text">В течение 30 минут после пробежки — белок (20–30 г) + углеводы. Ускоряет восстановление в 2 раза.</div>
+                </div>
+            </div>
+
+            <div id="view-sleep" style="display:none;">
+                <div class="page-header">
+                    <h1 class="page-title">Сон</h1>
+                    <p class="page-sub">Восстановление для бегуна</p>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="label">Длительность</div><div class="value">7:32</div></div>
+                    <div class="stat-card"><div class="label">Качество</div><div class="value">85%</div></div>
+                    <div class="stat-card"><div class="label">Отход</div><div class="value">23:15</div></div>
+                    <div class="stat-card"><div class="label">Подъём</div><div class="value">6:47</div></div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Сон за неделю</div>
+                    <div class="chart-bars">
+                        <div class="bar" style="height:72%"><span class="tip">Пн</span></div>
+                        <div class="bar" style="height:60%"><span class="tip">Вт</span></div>
+                        <div class="bar" style="height:85%"><span class="tip">Ср</span></div>
+                        <div class="bar" style="height:68%"><span class="tip">Чт</span></div>
+                        <div class="bar" style="height:90%"><span class="tip">Пт</span></div>
+                        <div class="bar" style="height:55%"><span class="tip">Сб</span></div>
+                        <div class="bar" style="height:78%"><span class="tip">Вс</span></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Совет</div>
+                    <div class="card-text">Сон 7–8 часов улучшает темп на 5–8%. Ложитесь до 23:30 — самые глубокие фазы сна до 3 часов ночи.</div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">Вход / Регистрация</h3>
+                <button class="modal-close" onclick="closeAuthModal()">Закрыть</button>
+            </div>
+            <div class="modal-body">
+                <form id="authForm" onsubmit="handleAuth(event)">
+                    <div class="form-group">
+                        <label>Имя</label>
+                        <input class="input" type="text" id="authName" required placeholder="Ваше имя" />
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Продолжить</button>
+                    </div>
+                </form>
+                <p class="auth-hint">Если имя уже существует, вы войдёте в профиль.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin + '/api';
+        let currentUserId = null;
+        let currentUser = null;
+        let entries = [];
+        let editId = null;
+        let currentFilter = 'all';
+        let searchQuery = '';
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function formatDate(dateStr) {
+            const d = new Date(dateStr + 'T00:00:00');
+            return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
+        function getTypeLabel(type) {
+            const map = {
+                easy: 'Легкая',
+                tempo: 'Темповая',
+                interval: 'Интервалы',
+                long: 'Длинная',
+                recovery: 'Восстановительная'
+            };
+            return map[type] || type;
+        }
+
+        function toast(msg, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const el = document.createElement('div');
+            el.className = `toast ${type}`;
+            el.textContent = msg;
+            container.appendChild(el);
+            setTimeout(() => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(8px)';
+                el.style.transition = '0.25s ease';
+                setTimeout(() => el.remove(), 300);
+            }, 2400);
+        }
+
+        function openAuthModal() {
+            document.getElementById('modalOverlay').classList.add('active');
+            document.getElementById('authForm').reset();
+        }
+
+        function closeAuthModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            document.getElementById('profileMenu').classList.remove('active');
+        }
+
+        async function handleAuth(e) {
+            e.preventDefault();
+            const name = document.getElementById('authName').value.trim();
+            if (!name) { toast('Введите имя', 'error'); return; }
+
+            try {
+                const response = await fetch(`${API_URL}/auth`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name })
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    currentUserId = data.id;
+                    currentUser = { name: data.name, id: data.id };
+                    localStorage.setItem('raged_user', JSON.stringify(currentUser));
+                    closeAuthModal();
+                    updateProfileIcon();
+                    updateLandingForUser();
+                    showApp('journal');
+                    await loadWorkouts();
+                    toast(`Привет, ${data.name}`, 'success');
+                } else {
+                    toast('Ошибка авторизации', 'error');
+                }
+            } catch (error) {
+                toast('Ошибка соединения', 'error');
+            }
+        }
+
+        function logout() {
+            if (!currentUser) return;
+            if (confirm('Выйти из профиля?')) {
+                localStorage.removeItem('raged_user');
+                currentUser = null;
+                currentUserId = null;
+                entries = [];
+                updateProfileIcon();
+                updateLandingForUser();
+                document.getElementById('profileMenu').classList.remove('active');
+                renderEntries();
+                toast('Вы вышли', 'info');
+            }
+        }
+
+        function toggleProfileMenu() {
+            const menu = document.getElementById('profileMenu');
+            menu.classList.toggle('active');
+            if (menu.classList.contains('active')) renderProfileMenu();
+        }
+
+        function renderProfileMenu() {
+            const menu = document.getElementById('profileMenu');
+            if (!menu.classList.contains('active')) return;
+            if (currentUser) {
+                menu.innerHTML = `
+                    <div class="profile-header">
+                        <div class="profile-avatar">${currentUser.name.charAt(0).toUpperCase()}</div>
+                        <div>
+                            <div class="profile-name">${escapeHtml(currentUser.name)}</div>
+                            <div class="profile-email">ID: ${currentUser.id}</div>
+                        </div>
+                    </div>
+                    <div class="profile-body">
+                        <button class="profile-btn" onclick="showApp('journal')">Дневник</button>
+                        <button class="profile-btn" onclick="showApp('insights')">Инсайты</button>
+                        <button class="profile-btn danger" onclick="logout()">Выйти</button>
+                    </div>
+                `;
+            } else {
+                menu.innerHTML = `
+                    <div class="profile-body" style="padding:8px;">
+                        <button class="profile-btn" onclick="openAuthModal()">Войти / Создать профиль</button>
+                    </div>
+                `;
+            }
+        }
+
+        function updateProfileIcon() {
+            const btn = document.getElementById('profileBtn');
+            if (currentUser) {
+                btn.textContent = currentUser.name.charAt(0).toUpperCase();
+                btn.title = currentUser.name;
+            } else {
+                btn.textContent = 'ID';
+                btn.title = 'Профиль';
+            }
+        }
+
+        function updateLandingForUser() {
+            const heroTitle = document.getElementById('heroTitle');
+            const heroSub = document.getElementById('heroSub');
+            const sessionValue = document.getElementById('heroSessionValue');
+            const paceValue = document.getElementById('heroPaceValue');
+            const distanceValue = document.getElementById('heroDistanceValue');
+            const pulseValue = document.getElementById('heroPulseValue');
+            const countValue = document.getElementById('heroCountValue');
+
+            if (currentUser) {
+                heroTitle.innerHTML = `Привет, <em>${escapeHtml(currentUser.name)}</em>`;
+                heroSub.textContent = 'Готов записать новую пробежку? Твой дневник бега ждёт.';
+                sessionValue.textContent = entries.length ? formatDate(entries[0].date) : '—';
+                countValue.textContent = entries.length;
+
+                let totalDist = 0, totalTime = 0;
+                entries.forEach(e => {
+                    if (e.distance_km && e.duration_minutes) {
+                        totalDist += parseFloat(e.distance_km);
+                        totalTime += e.duration_minutes;
+                    }
+                });
+                if (totalDist > 0) {
+                    const avgPace = totalTime / totalDist;
+                    const min = Math.floor(avgPace);
+                    const sec = Math.round((avgPace - min) * 60);
+                    paceValue.textContent = `${min}:${sec.toString().padStart(2,'0')} /км`;
+                } else {
+                    paceValue.textContent = '—';
+                }
+
+                const hrEntries = entries.filter(e => e.avg_heart_rate);
+                if (hrEntries.length) {
+                    const avgHr = Math.round(hrEntries.reduce((s, e) => s + e.avg_heart_rate, 0) / hrEntries.length);
+                    pulseValue.textContent = avgHr + ' уд/мин';
+                } else {
+                    pulseValue.textContent = '—';
+                }
+
+                const lastWithDist = entries.find(e => e.distance_km);
+                distanceValue.textContent = lastWithDist ? lastWithDist.distance_km + ' км' : '—';
+            } else {
+                heroTitle.innerHTML = 'Записывай каждую <em>пробежку</em>';
+                heroSub.textContent = 'Отслеживай прогресс, темп и самочувствие. Понимай, что реально влияет на твои результаты.';
+                sessionValue.textContent = '—';
+                paceValue.textContent = '—';
+                distanceValue.textContent = '—';
+                pulseValue.textContent = '—';
+                countValue.textContent = '—';
+            }
+        }
+
+        async function loadWorkouts() {
+            if (!currentUserId) return;
+            try {
+                const response = await fetch(`${API_URL}/workouts?user_id=${currentUserId}`);
+                if (response.ok) {
+                    entries = await response.json();
+                    renderEntries();
+                    updateDashboardStats();
+                    updateLandingForUser();
+                }
+            } catch (error) {
+                console.error('Load error:', error);
+            }
+        }
+
+        async function saveJournalEntry() {
+            if (!currentUserId) {
+                toast('Сначала войдите в профиль', 'error');
+                openAuthModal();
+                return;
+            }
+
+            const text = document.getElementById('journalText').value.trim();
+            if (!text) { toast('Введите текст записи', 'error'); return; }
+
+            const workout = {
+                id: editId || null,
+                workout_type: document.getElementById('journalType').value,
+                date: document.getElementById('journalDate').value || new Date().toISOString().slice(0, 10),
+                duration_minutes: parseInt(document.getElementById('journalDuration').value) || null,
+                notes: text,
+                mood: document.querySelector('#moodSelector .mood-btn.active')?.dataset.mood || 'Хорошо',
+                distance_km: parseFloat(document.getElementById('journalDistance').value) || null,
+                avg_heart_rate: parseInt(document.getElementById('avgHeartRate').value) || null,
+                calories_burned: parseInt(document.getElementById('caloriesBurned').value) || null
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/workouts?user_id=${currentUserId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(workout)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Ошибка сохранения');
+                }
+
+                const data = await response.json();
+
+                if (editId) {
+                    const idx = entries.findIndex(e => e.id === editId);
+                    if (idx !== -1) entries[idx] = data;
+                    toast('Пробежка обновлена', 'success');
+                } else {
+                    entries.unshift(data);
+                    toast('Пробежка сохранена', 'success');
+                }
+
+                editId = null;
+                document.querySelector('.btn-save').textContent = 'Сохранить пробежку';
+                clearForm();
+                renderEntries();
+                updateDashboardStats();
+                updateLandingForUser();
+            } catch (error) {
+                toast(error.message || 'Ошибка сохранения', 'error');
+            }
+        }
+
+        async function deleteEntry(id) {
+            if (!currentUserId) return;
+            if (!confirm('Удалить пробежку?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/workouts/${id}?user_id=${currentUserId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    entries = entries.filter(e => e.id !== id);
+                    renderEntries();
+                    updateDashboardStats();
+                    updateLandingForUser();
+                    toast('Пробежка удалена', 'info');
+                }
+            } catch (error) {
+                toast('Ошибка соединения', 'error');
+            }
+        }
+
+        function editEntry(id) {
+            const e = entries.find(entry => entry.id === id);
+            if (!e) return;
+
+            editId = e.id;
+            document.getElementById('journalText').value = e.notes || '';
+            document.getElementById('journalType').value = e.workout_type;
+            document.getElementById('journalDate').value = e.date;
+            document.getElementById('journalDuration').value = e.duration_minutes || '';
+            document.getElementById('journalDistance').value = e.distance_km || '';
+            document.getElementById('avgHeartRate').value = e.avg_heart_rate || '';
+            document.getElementById('caloriesBurned').value = e.calories_burned || '';
+
+            document.querySelectorAll('#moodSelector .mood-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.mood === e.mood);
+            });
+
+            document.querySelectorAll('#presetContainer .preset-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.type === e.workout_type);
+            });
+
+            document.querySelector('.btn-save').textContent = 'Обновить пробежку';
+            document.getElementById('journalText').focus();
+            toast('Редактирование: ' + formatDate(e.date), 'info');
+        }
+
+        function clearForm() {
+            document.getElementById('journalText').value = '';
+            document.getElementById('journalDuration').value = '';
+            document.getElementById('journalDistance').value = '';
+            document.getElementById('avgHeartRate').value = '';
+            document.getElementById('caloriesBurned').value = '';
+            const today = new Date().toISOString().slice(0, 10);
+            document.getElementById('journalDate').value = today;
+            document.querySelector('.btn-save').textContent = 'Сохранить пробежку';
+            editId = null;
+
+            document.querySelectorAll('#presetContainer .preset-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.type === 'easy');
+            });
+            document.getElementById('journalType').value = 'easy';
+
+            document.querySelectorAll('#moodSelector .mood-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.mood === 'Хорошо');
+            });
+        }
+
+        function renderEntries() {
+            const container = document.getElementById('journalEntries');
+
+            const filtered = entries
+                .filter(e => currentFilter === 'all' || e.workout_type === currentFilter)
+                .filter(e => {
+                    if (!searchQuery.trim()) return true;
+                    const q = searchQuery.trim().toLowerCase();
+                    return (e.notes || '').toLowerCase().includes(q) ||
+                        e.date.includes(q);
+                })
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (!filtered.length) {
+                container.innerHTML = `
+                    <div class="entry-empty">
+                        <div class="icon">ПУСТО</div>
+                        <p>Нет записей. Добавь первую пробежку.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(e => {
+                const metaParts = [];
+                if (e.duration_minutes) metaParts.push(`${e.duration_minutes} мин`);
+                if (e.distance_km) metaParts.push(`${e.distance_km} км`);
+                if (e.avg_heart_rate) metaParts.push(`${e.avg_heart_rate} уд/мин`);
+                if (e.calories_burned) metaParts.push(`${e.calories_burned} ккал`);
+
+                if (e.distance_km && e.duration_minutes) {
+                    const pace = e.duration_minutes / parseFloat(e.distance_km);
+                    const min = Math.floor(pace);
+                    const sec = Math.round((pace - min) * 60);
+                    metaParts.push(`${min}:${sec.toString().padStart(2,'0')} /км`);
+                }
+
+                const metaStr = metaParts.join(' · ') || 'нет данных';
+
+                return `
+                    <div class="entry-card" data-id="${e.id}">
+                        <div class="head">
+                            <span class="date">${formatDate(e.date)}</span>
+                            <span class="type-badge">${getTypeLabel(e.workout_type)}</span>
+                            <span class="mood">${e.mood || 'Хорошо'}</span>
+                        </div>
+                        <div class="body">${escapeHtml(e.notes || '')}</div>
+                        <div class="foot">
+                            <span class="meta">${metaStr}</span>
+                            <div class="actions">
+                                <button class="edit" onclick="editEntry('${e.id}')" title="Редактировать">Правка</button>
+                                <button class="danger" onclick="deleteEntry('${e.id}')" title="Удалить">Удалить</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateDashboardStats() {
+            const total = entries.length;
+            const totalDistance = entries.reduce((sum, e) => sum + (parseFloat(e.distance_km) || 0), 0);
+            const totalDuration = entries.reduce((sum, e) => sum + (e.duration_minutes || 0), 0);
+
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statDistance').textContent = totalDistance.toFixed(1);
+            document.getElementById('statDuration').textContent = totalDuration;
+
+            if (totalDistance > 0 && totalDuration > 0) {
+                const avgPace = totalDuration / totalDistance;
+                const min = Math.floor(avgPace);
+                const sec = Math.round((avgPace - min) * 60);
+                document.getElementById('statAvgPace').textContent = `${min}:${sec.toString().padStart(2,'0')}`;
+            } else {
+                document.getElementById('statAvgPace').textContent = '—';
+            }
+        }
+
+        async function askRag() {
+            const q = document.getElementById('ragQuestion').value.trim();
+            if (!q) { toast('Введите вопрос', 'error'); return; }
+
+            const chat = document.getElementById('assistantChat');
+
+            const userMsg = document.createElement('div');
+            userMsg.className = 'msg user';
+            userMsg.innerHTML = `<div class="text">${escapeHtml(q)}</div>`;
+            chat.appendChild(userMsg);
+
+            const typing = document.createElement('div');
+            typing.className = 'msg bot';
+            typing.innerHTML = `<div class="text" style="color:var(--text-muted);">Анализирую твои пробежки...</div>`;
+            chat.appendChild(typing);
+            chat.scrollTop = chat.scrollHeight;
+            document.getElementById('ragQuestion').value = '';
+
+            try {
+                const url = currentUserId ? `${API_URL}/chat?user_id=${currentUserId}` : `${API_URL}/chat`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: q })
+                });
+
+                const data = await response.json();
+
+                typing.remove();
+                const botMsg = document.createElement('div');
+                botMsg.className = 'msg bot';
+                botMsg.innerHTML = `
+                    <div class="label">RAGED AI</div>
+                    <div class="text">${escapeHtml(data.answer || 'Не удалось получить ответ')}</div>
+                    <div class="tags">
+                        <span onclick="setQ('Почему темп улучшился?')">Темп</span>
+                        <span onclick="setQ('Как увеличить дистанцию?')">Дистанция</span>
+                        <span onclick="setQ('Что есть перед пробежкой?')">Питание</span>
+                        <span onclick="setQ('Как восстановиться?')">Восстановление</span>
+                    </div>
+                `;
+                chat.appendChild(botMsg);
+                chat.scrollTop = chat.scrollHeight;
+            } catch (error) {
+                typing.remove();
+                toast('Ошибка AI-тренера', 'error');
+            }
+        }
+
+        function setQ(q) {
+            document.getElementById('ragQuestion').value = q;
+            askRag();
+        }
+
+        function showLanding() {
+            document.getElementById('landing').style.display = 'block';
+            document.getElementById('app').classList.remove('active');
+        }
+
+        function showApp(view) {
+            document.getElementById('landing').style.display = 'none';
+            document.getElementById('app').classList.add('active');
+
+            const navItem = document.querySelector(`.nav-item[onclick*="${view}"]`);
+            if (navItem) switchView(view, navItem);
+            else switchView('journal', document.querySelector('.nav-item'));
+
+            if (view === 'journal') renderEntries();
+            if (view === 'dashboard') updateDashboardStats();
+        }
+
+        function switchView(view, el) {
+            document.querySelectorAll('[id^="view-"]').forEach(v => v.style.display = 'none');
+            const target = document.getElementById('view-' + view);
+            if (target) target.style.display = 'block';
+
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            if (el) el.classList.add('active');
+
+            if (view === 'journal') renderEntries();
+            if (view === 'dashboard') updateDashboardStats();
+        }
+
+        document.getElementById('presetContainer').addEventListener('click', function(e) {
+            const btn = e.target.closest('.preset-btn');
+            if (!btn) return;
+            document.querySelectorAll('#presetContainer .preset-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const type = btn.dataset.type;
+            document.getElementById('journalType').value = type;
+
+            const templates = {
+                easy: 'Легкая пробежка. Дышу ровно, разговариваю на бегу. Комфортный темп.',
+                tempo: 'Темповая пробежка. Держу быстрый темп, дышу интенсивно. Работаю на пороге.',
+                interval: 'Интервальная тренировка. Чередую быстрый темп с восстановлением. Выложился на максимум.',
+                long: 'Длинная пробежка. Равномерный темп, работаю на выносливость. Питание во время бега.',
+                recovery: 'Восстановительная пробежка. Очень лёгкий темп, отдых после нагрузок. Слушаю тело.'
+            };
+
+            const textarea = document.getElementById('journalText');
+            if (!textarea.value.trim() || confirm('Заменить текущий текст шаблоном?')) {
+                textarea.value = templates[type] || '';
+            }
+            textarea.focus();
+        });
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.dataset.filter;
+                renderEntries();
+            });
+        });
+
+        document.getElementById('searchInput').addEventListener('input', function() {
+            searchQuery = this.value;
+            renderEntries();
+        });
+
+        document.getElementById('moodSelector').addEventListener('click', function(e) {
+            const btn = e.target.closest('.mood-btn');
+            if (!btn) return;
+            document.querySelectorAll('#moodSelector .mood-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        });
+
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) closeAuthModal();
+        });
+
+        (function initParticles() {
+            const wrap = document.querySelector('.bg-wrap');
+            for (let i = 0; i < 20; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = (Math.random() * 100) + '%';
+                p.style.animationDuration = (12 + Math.random() * 20) + 's';
+                p.style.animationDelay = (Math.random() * 15) + 's';
+                p.style.width = (2 + Math.random() * 4) + 'px';
+                p.style.height = p.style.width;
+                wrap.appendChild(p);
+            }
+        })();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().slice(0, 10);
+            document.getElementById('journalDate').value = today;
+
+            const savedUser = localStorage.getItem('raged_user');
+            if (savedUser) {
+                try {
+                    const user = JSON.parse(savedUser);
+                    currentUser = user;
+                    currentUserId = user.id;
+                    updateProfileIcon();
+                    updateLandingForUser();
+                    showApp('journal');
+                    loadWorkouts();
+                } catch (e) {
+                    localStorage.removeItem('raged_user');
+                }
+            }
+
+            renderEntries();
+            updateLandingForUser();
+            updateProfileIcon();
+        });
+    </script>
+</body>
+</html>
